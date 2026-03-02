@@ -1,6 +1,6 @@
 ﻿<div align="center">
 
-# Bagah Bot v2.0.0
+# Bagah Bot
 
 WhatsApp Bot — ESM · OOP · Baileys v7 · SQLite
 
