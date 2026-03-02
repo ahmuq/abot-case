@@ -25,6 +25,7 @@ Bagah Bot adalah WhatsApp bot yang ditulis dengan arsitektur **ESM + OOP** mengg
 - **Modular commands** — setiap kategori command 1 file class terpisah
 - **Config via `.env`** — tidak ada value sensitif di source code
 - AI, downloader, search, sticker, group management, owner tools
+- **BagahProject API** — semua fitur downloader pakai API dari [bagahproject.com](https://bagahproject.com)
 
 ## Struktur Project
 
@@ -47,15 +48,15 @@ bagah-bot/
     │   └── GroupHandler.js     # Handle join/leave group
     ├── commands/               # ← TAMBAH COMMAND DI SINI
     │   ├── GeneralCommand.js   # menu, runtime
-    │   ├── MakerCommand.js     # sticker, toimg, tts, brat
+    │   ├── MakerCommand.js     # sticker, toimg, tts
     │   ├── GroupCommand.js     # promote, demote, kick, hidetag, tagall
     │   ├── OwnerCommand.js     # setppbot, addpremium, broadcast
-    │   ├── DownloaderCommand.js# tiktok, fb, ig, yt
-    │   ├── SearchCommand.js    # pinterest, wikimedia, waifu
-    │   └── AiCommand.js        # ai, gemini, blackbox, remini
+    │   ├── DownloaderCommand.js# tiktok, fb, ig, igstory
+    │   ├── SearchCommand.js    # tiktokstalk
+    │   └── AiCommand.js        # ai
     ├── lib/
+    │   ├── BagahAPI.js        # Client API bagahproject.com
     │   ├── Exif.js            # WebP sticker + EXIF metadata
-    │   ├── scraper.js         # Web scraping functions
     │   └── uploader.js        # File upload (telegraph, etc)
     └── utils/
         ├── helpers.js         # Utility functions
@@ -87,9 +88,17 @@ BOT_OWNER=628xxxxxxxxxx
 PAIRING_ENABLED=true
 PAIRING_NUMBER=628xxxxxxxxxx
 PAIRING_CUSTOM_CODE=BAGAHBOT
+API_KEY=your_api_key_here
 ```
 
-### 3. Jalankan
+### 3. Dapatkan API Key
+
+1. Buka [bagahproject.com](https://bagahproject.com)
+2. Daftar / login akun
+3. Copy API key dari dashboard
+4. Paste ke `API_KEY` di file `.env`
+
+### 4. Jalankan
 
 ```bash
 npm start
@@ -239,7 +248,6 @@ async namaCommand(msg, { args, text, command }) {
 | Database | `sql.js` (pure JS SQLite)               |
 | Sticker  | `jimp`, `node-webpmux`, `fluent-ffmpeg` |
 | HTTP     | `axios`                                 |
-| Scraping | `cheerio`                               |
 
 ## Requirements
 

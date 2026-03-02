@@ -18,19 +18,17 @@ export default class DownloaderCommand {
         { handler: this.facebook.bind(this), category: "downloader" },
       ],
       ["fbdl", { handler: this.facebook.bind(this), category: "downloader" }],
+      ["igdl", { handler: this.instagram.bind(this), category: "downloader" }],
+      [
+        "instadl",
+        { handler: this.instagram.bind(this), category: "downloader" },
+      ],
+      ["igstory", { handler: this.igStory.bind(this), category: "downloader" }],
       [
         "ttmp3",
         { handler: this.tiktokAudio.bind(this), category: "downloader" },
       ],
       ["tt3", { handler: this.tiktokAudio.bind(this), category: "downloader" }],
-      [
-        "quotesanime",
-        { handler: this.quotesAnime.bind(this), category: "downloader" },
-      ],
-      [
-        "quoteanime",
-        { handler: this.quotesAnime.bind(this), category: "downloader" },
-      ],
     ]);
   }
 
@@ -117,6 +115,75 @@ export default class DownloaderCommand {
     );
   }
 
+  async instagram(msg, { text }) {
+    this.#requireUrl(text, "!igdl https://www.instagram.com/p/xxx");
+    await msg.reply(this.bot.config.messages.wait);
+
+    const media = await this.bot.api.instagramDownload(text);
+
+    for (let i = 0; i < media.length; i++) {
+      const item = media[i];
+      const caption = media.length > 1 ? `Media ${i + 1}/${media.length}` : "";
+
+      if (item.type === "mp4") {
+        await this.bot.sock.sendMessage(
+          msg.chat,
+          { video: { url: item.url }, caption },
+          { quoted: msg.raw },
+        );
+      } else {
+        await this.bot.sock.sendMessage(
+          msg.chat,
+          { image: { url: item.url }, caption },
+          { quoted: msg.raw },
+        );
+      }
+    }
+  }
+
+  async igStory(msg, { text }) {
+    if (!text)
+      throw "Masukkan username Instagram\nContoh : !igstory kennyxepher";
+    const username = text.replace(/^@/, "");
+    await msg.reply(this.bot.config.messages.wait);
+
+    const { user, stories } = await this.bot.api.igStory(username);
+
+    if (!stories.length) throw `Tidak ada story dari @${username}`;
+
+    const profile = [
+      `📱 *Instagram Story*\n`,
+      `Username  : @${user.username}`,
+      `Name      : ${user.fullName}`,
+      `Followers : ${user.followers}`,
+      `Following : ${user.following}`,
+      `Posts     : ${user.posts}`,
+      `Stories   : ${stories.length} media`,
+    ].join("\n");
+
+    await msg.reply(profile);
+
+    for (let i = 0; i < stories.length; i++) {
+      const item = stories[i];
+      const caption =
+        stories.length > 1 ? `Story ${i + 1}/${stories.length}` : "";
+
+      if (item.type === "video") {
+        await this.bot.sock.sendMessage(
+          msg.chat,
+          { video: { url: item.url }, caption },
+          { quoted: msg.raw },
+        );
+      } else {
+        await this.bot.sock.sendMessage(
+          msg.chat,
+          { image: { url: item.url }, caption },
+          { quoted: msg.raw },
+        );
+      }
+    }
+  }
+
   async tiktokAudio(msg, { text }) {
     this.#requireUrl(text, "!ttmp3 https://vt.tiktok.com/ZS82urPBa/");
     if (!text.includes("tiktok.com")) throw "Error Link";
@@ -137,14 +204,5 @@ export default class DownloaderCommand {
     } catch {
       throw "Maaf Kak Fitur Sedang Error";
     }
-  }
-
-  async quotesAnime(msg) {
-    const { quotesAnime: scrapeQuotes } = await import("../lib/scraper.js");
-    const data = await scrapeQuotes();
-    const result = data[Math.floor(Math.random() * data.length)];
-
-    const text = `~_${result.quotes}_\n\nBy '${result.karakter}', ${result.anime}\n\n- ${result.up_at}`;
-    await msg.reply(text);
   }
 }

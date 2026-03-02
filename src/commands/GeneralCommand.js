@@ -78,13 +78,12 @@ export default class GeneralCommand {
 ╭──「 *DOWNLOADER MENU* 」
 │ ⿻ !ttnwm / !ttmp3
 │ ⿻ !fbdl
+│ ⿻ !igdl
+│ ⿻ !igstory
 │ ⿻ !couple
-│ ⿻ !quotesanime
 ╰────────────
 
 ╭──「 *SEARCH MENU* 」
-│ ⿻ !wikimedia
-│ ⿻ !pinterest
 │ ⿻ !tiktokstalk
 ╰────────────
 
