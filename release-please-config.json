@@ -1,0 +1,52 @@
+{
+    "packages": {
+        ".": {
+            "release-type": "node",
+            "bump-minor-pre-major": true,
+            "bump-patch-for-minor-pre-major": true,
+            "changelog-sections": [
+                {
+                    "type": "feat",
+                    "section": "Fitur Baru"
+                },
+                {
+                    "type": "fix",
+                    "section": "Perbaikan Bug"
+                },
+                {
+                    "type": "perf",
+                    "section": "Peningkatan Performa"
+                },
+                {
+                    "type": "refactor",
+                    "section": "Refactor"
+                },
+                {
+                    "type": "docs",
+                    "section": "Dokumentasi"
+                },
+                {
+                    "type": "chore",
+                    "section": "Lainnya",
+                    "hidden": true
+                },
+                {
+                    "type": "style",
+                    "section": "Lainnya",
+                    "hidden": true
+                },
+                {
+                    "type": "test",
+                    "section": "Lainnya",
+                    "hidden": true
+                },
+                {
+                    "type": "ci",
+                    "section": "Lainnya",
+                    "hidden": true
+                }
+            ]
+        }
+    },
+    "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
+}
