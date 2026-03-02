@@ -1,5 +1,3 @@
-import axios from "axios";
-
 export default class SearchCommand {
   constructor(bot) {
     this.bot = bot;
@@ -16,25 +14,26 @@ export default class SearchCommand {
 
   async tiktokStalk(msg, { text }) {
     if (!text) throw "Masukkan username tiktok";
+    const username = text.replace(/^@/, "");
 
-    try {
-      const { data } = await axios.get(
-        `https://sh.xznsenpai.xyz/api/ttstalk?user=${encodeURIComponent(text)}`,
+    const data = await this.bot.api.tiktokStalk(username);
+
+    const result = [
+      "📱 *Tiktok Stalker*\n",
+      `Username  : @${username}`,
+      `Followers : ${data.followers}`,
+      `Following : ${data.following}`,
+      `Likes     : ${data.likes}`,
+    ].join("\n");
+
+    if (data.avatar) {
+      await this.bot.sock.sendMessage(
+        msg.chat,
+        { image: { url: data.avatar }, caption: result },
+        { quoted: msg.raw },
       );
-
-      const result = [
-        "📱 *Tiktok Stalker*\n",
-        `Username  : ${data.uniqueId}`,
-        `Name      : ${data.nickname}`,
-        `Follower  : ${data.followerCount}`,
-        `Following : ${data.followingCount}`,
-        `Likes     : ${data.heart}`,
-        `Videos    : ${data.videoCount}`,
-      ].join("\n");
-
+    } else {
       await msg.reply(result);
-    } catch {
-      throw "Gagal mengambil data TikTok";
     }
   }
 }

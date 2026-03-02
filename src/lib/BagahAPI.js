@@ -72,4 +72,15 @@ export default class BagahAPI {
       })),
     };
   }
+
+  async tiktokStalk(username) {
+    const result = await this.#request("/api/tiktokstalk", { username });
+
+    return {
+      avatar: result.avatar,
+      following: result.following,
+      followers: result.followers,
+      likes: result.likes,
+    };
+  }
 }
