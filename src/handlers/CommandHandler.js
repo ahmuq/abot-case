@@ -7,18 +7,12 @@ import OwnerCommand from "../commands/OwnerCommand.js";
 import SearchCommand from "../commands/SearchCommand.js";
 import Logger from "../utils/logger.js";
 
-/**
- * CommandHandler - Mengumpulkan & mengarahkan command ke handler yang tepat
- */
 export default class CommandHandler {
-  /** @param {import('../BagahBot.js').default} bot */
   constructor(bot) {
     this.bot = bot;
     this.commands = new Map();
     this.#registerAll();
   }
-
-  /* ───────── Register Commands ───────── */
 
   #registerAll() {
     const modules = [
@@ -42,8 +36,6 @@ export default class CommandHandler {
     );
   }
 
-  /* ───────── Prefix Detection ───────── */
-
   #getPrefix(body) {
     if (!body) return null;
     const prefixes = this.bot.config.bot.prefix;
@@ -64,18 +56,12 @@ export default class CommandHandler {
     return null;
   }
 
-  /* ───────── Handle Incoming Message ───────── */
-
-  /**
-   * @param {import('../utils/serializer.js').default} msg - Parsed message
-   */
   async handle(msg) {
     const body = msg.body || msg.text || "";
     if (!body) return;
 
     const prefix = this.#getPrefix(body);
     if (prefix === null) {
-      // Cek eval command (> ...)
       await this.#handleEval(msg, body);
       return;
     }
@@ -91,7 +77,6 @@ export default class CommandHandler {
     const command = this.commands.get(cmdName);
     if (!command) return;
 
-    // Log command
     Logger.cmd({
       command: cmdName,
       pushname: msg.pushName,
@@ -106,8 +91,6 @@ export default class CommandHandler {
       await msg.reply(errMsg);
     }
   }
-
-  /* ───────── Eval (Owner only) ───────── */
 
   async #handleEval(msg, body) {
     if (!body.startsWith(">")) return;

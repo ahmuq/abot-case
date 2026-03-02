@@ -1,8 +1,5 @@
 import { Jimp } from "jimp";
 
-/**
- * OwnerCommand - Command khusus owner bot
- */
 export default class OwnerCommand {
   constructor(bot) {
     this.bot = bot;
@@ -22,13 +19,9 @@ export default class OwnerCommand {
     ]);
   }
 
-  /* ───────── Guard ───────── */
-
   #requireOwner(msg) {
     if (!this.bot.isCreator(msg.sender)) throw this.bot.config.messages.owner;
   }
-
-  /* ───────── Handlers ───────── */
 
   async selfOff(msg) {
     this.#requireOwner(msg);
@@ -54,7 +47,6 @@ export default class OwnerCommand {
     const media = await msg.quoted.download();
     const botNumber = this.bot.decodeJid(this.bot.sock.user.id);
 
-    // Resize for profile picture
     const jimp = await Jimp.read(media);
     const resized =
       jimp.width > jimp.height
@@ -74,7 +66,6 @@ export default class OwnerCommand {
     const number = text.split("|")[0].replace(/[^0-9]/g, "");
     const jid = number + "@s.whatsapp.net";
 
-    // Cek nomor valid
     const exists = await this.bot.sock.onWhatsApp(jid);
     if (!exists?.length)
       throw "Masukkan Nomor Yang Valid Dan Terdaftar Di WhatsApp!";

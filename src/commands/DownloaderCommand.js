@@ -1,9 +1,5 @@
-import { buildApiUrl } from "../config/index.js";
 import { fetchJson } from "../utils/helpers.js";
 
-/**
- * DownloaderCommand - Download media dari berbagai platform
- */
 export default class DownloaderCommand {
   constructor(bot) {
     this.bot = bot;
@@ -22,29 +18,6 @@ export default class DownloaderCommand {
         { handler: this.facebook.bind(this), category: "downloader" },
       ],
       ["fbdl", { handler: this.facebook.bind(this), category: "downloader" }],
-      ["igdl", { handler: this.instagram.bind(this), category: "downloader" }],
-      ["ig", { handler: this.instagram.bind(this), category: "downloader" }],
-      [
-        "twittervideo",
-        { handler: this.twitter.bind(this), category: "downloader" },
-      ],
-      ["twtdl", { handler: this.twitter.bind(this), category: "downloader" }],
-      [
-        "ytmp4",
-        { handler: this.youtubeVideo.bind(this), category: "downloader" },
-      ],
-      [
-        "youtubevidio",
-        { handler: this.youtubeVideo.bind(this), category: "downloader" },
-      ],
-      [
-        "ytmp3",
-        { handler: this.youtubeAudio.bind(this), category: "downloader" },
-      ],
-      [
-        "youtubeaudio",
-        { handler: this.youtubeAudio.bind(this), category: "downloader" },
-      ],
       [
         "ttmp3",
         { handler: this.tiktokAudio.bind(this), category: "downloader" },
@@ -61,13 +34,9 @@ export default class DownloaderCommand {
     ]);
   }
 
-  /* ───────── Helpers ───────── */
-
   #requireUrl(text, example) {
     if (!text) throw `Example : ${example}`;
   }
-
-  /* ───────── Handlers ───────── */
 
   async couple(msg) {
     const data = await fetchJson(
@@ -126,118 +95,26 @@ export default class DownloaderCommand {
 
   async facebook(msg, { text }) {
     this.#requireUrl(text, "!fbdl https://www.facebook.com/...");
-    await msg.reply("_Waitt... ⏳_");
+    await msg.reply(this.bot.config.messages.wait);
 
-    try {
-      const res = await fetch(
-        buildApiUrl("betabotz", "tools/facebookdl", { url: text }),
-      );
-      const json = await res.json();
+    const result = await this.bot.api.facebookDownload(text);
+    if (!result.url) throw "Gagal download video Facebook";
 
-      await this.bot.sock.sendMessage(
-        msg.chat,
-        {
-          video: { url: json.result.HD },
-          caption: "Done",
-        },
-        { quoted: msg.raw },
-      );
-    } catch {
-      throw "Fitur sedang error";
-    }
-  }
+    const caption = [
+      result.description ? `⭔ ${result.description}` : "",
+      `⭔ Quality : ${result.quality || "Unknown"}`,
+    ]
+      .filter(Boolean)
+      .join("\n");
 
-  async instagram(msg, { text }) {
-    this.#requireUrl(text, "!igdl https://www.instagram.com/p/CK0tLXyAzEI");
-    await msg.reply("_Waitt... ⏳_");
-
-    try {
-      const res = await fetch(
-        buildApiUrl("betabotz", "tools/instagramdl", { url: text }),
-      );
-      const json = await res.json();
-
-      await this.bot.sock.sendMessage(
-        msg.chat,
-        {
-          video: { url: json.result[0]._url },
-          caption: "Done",
-        },
-        { quoted: msg.raw },
-      );
-    } catch {
-      throw "Fitur sedang error";
-    }
-  }
-
-  async twitter(msg, { text }) {
-    this.#requireUrl(text, "!twtdl https://twitter.com/...");
-    if (!text.includes("twitter.com") && !text.includes("x.com"))
-      throw "Error Link";
-
-    try {
-      const res = await fetch(
-        buildApiUrl("betabotz", "tools/twitterdl", { url: text }),
-      );
-      const json = await res.json();
-
-      await this.bot.sock.sendMessage(
-        msg.chat,
-        {
-          video: { url: json.result.mediaURLs[0] },
-          caption: "Done",
-        },
-        { quoted: msg.raw },
-      );
-    } catch {
-      throw "Maaf Kak Fitur Sedang Error";
-    }
-  }
-
-  async youtubeVideo(msg, { text }) {
-    this.#requireUrl(text, "!ytmp4 https://youtu.be/3hXbjp-FcTc");
-    if (!text.includes("youtu")) throw "Error Link";
-
-    try {
-      const res = await fetch(
-        buildApiUrl("betabotz", "tools/ytmp4", { url: text }),
-      );
-      const json = await res.json();
-
-      await this.bot.sock.sendMessage(
-        msg.chat,
-        {
-          video: { url: json.result.link },
-          caption: `⭔ Judul : ${json.result.title}\n⭔ Size : ${json.result.size}`,
-        },
-        { quoted: msg.raw },
-      );
-    } catch {
-      throw "Maaf Kak Fitur Sedang Error";
-    }
-  }
-
-  async youtubeAudio(msg, { text }) {
-    this.#requireUrl(text, "!ytmp3 https://youtu.be/3hXbjp-FcTc");
-    if (!text.includes("youtu")) throw "Error Link";
-
-    try {
-      const res = await fetch(
-        buildApiUrl("betabotz", "tools/ytmp3", { url: text }),
-      );
-      const json = await res.json();
-
-      await this.bot.sock.sendMessage(
-        msg.chat,
-        {
-          audio: { url: json.result.link },
-          mimetype: "audio/mp4",
-        },
-        { quoted: msg.raw },
-      );
-    } catch {
-      throw "Maaf Kak Fitur Sedang Error";
-    }
+    await this.bot.sock.sendMessage(
+      msg.chat,
+      {
+        video: { url: result.url },
+        caption,
+      },
+      { quoted: msg.raw },
+    );
   }
 
   async tiktokAudio(msg, { text }) {

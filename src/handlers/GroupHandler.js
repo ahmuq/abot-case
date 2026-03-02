@@ -2,18 +2,11 @@ import { Jimp } from "jimp";
 import { getBuffer } from "../utils/helpers.js";
 import Logger from "../utils/logger.js";
 
-/**
- * GroupHandler - Menangani event group (join, leave, dll)
- */
 export default class GroupHandler {
-  /** @param {import('../BagahBot.js').default} bot */
   constructor(bot) {
     this.bot = bot;
   }
 
-  /**
-   * Handle group participants update
-   */
   async handle(event) {
     try {
       const metadata = await this.bot.sock.groupMetadata(event.id);
@@ -29,8 +22,6 @@ export default class GroupHandler {
       Logger.error("Group handler error:", err);
     }
   }
-
-  /* ───────── Join ───────── */
 
   async #handleJoin(event, metadata, member, pic) {
     const username = `@${member.split("@")[0]}`;
@@ -59,8 +50,6 @@ export default class GroupHandler {
     });
   }
 
-  /* ───────── Leave ───────── */
-
   async #handleLeave(event, metadata, member, pic) {
     const text = [
       `Selamat Tinggal Kak @${member.split("@")[0]}`,
@@ -73,8 +62,6 @@ export default class GroupHandler {
       mentions: [member],
     });
   }
-
-  /* ───────── Helpers ───────── */
 
   async #getProfilePic(jid, fallbackJid) {
     try {

@@ -2,11 +2,6 @@ import axios from "axios";
 import FormData from "form-data";
 import fs from "node:fs";
 
-/**
- * Upload file ke Telegra.ph
- * @param {string} filePath - Path ke file yang akan diupload
- * @returns {Promise<string>} URL hasil upload
- */
 export async function telegraph(filePath) {
   if (!fs.existsSync(filePath)) throw new Error("File not found");
 
@@ -23,11 +18,6 @@ export async function telegraph(filePath) {
   return "https://telegra.ph" + data[0].src;
 }
 
-/**
- * Upload file ke Uguu.se
- * @param {string} filePath - Path ke file yang akan diupload
- * @returns {Promise<object>} Data hasil upload
- */
 export async function uploadFileUgu(filePath) {
   const form = new FormData();
   form.append("files[]", fs.createReadStream(filePath));
@@ -46,13 +36,6 @@ export async function uploadFileUgu(filePath) {
   return data.files[0];
 }
 
-/**
- * Upload image buffer & return URL (via telegraph)
- * Berguna untuk fitur yang butuh URL gambar
- * @param {Buffer} buffer - Buffer gambar
- * @param {string} ext - Extension file (default: 'jpg')
- * @returns {Promise<string>} URL gambar
- */
 export async function bufferToUrl(buffer, ext = "jpg") {
   const tmpPath = `/tmp/upload_${Date.now()}.${ext}`;
   fs.writeFileSync(tmpPath, buffer);

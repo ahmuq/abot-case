@@ -1,9 +1,6 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
 
-/**
- * Scrape gambar dari Pinterest
- */
 export async function pinterest(query) {
   const { data } = await axios.get(
     `https://id.pinterest.com/search/pins/?autologin=true&q=${encodeURIComponent(query)}`,
@@ -19,9 +16,6 @@ export async function pinterest(query) {
   return results.slice(1);
 }
 
-/**
- * Scrape gambar dari Wikimedia
- */
 export async function wikimedia(title) {
   const { data } = await axios.get(
     `https://commons.wikimedia.org/w/index.php?search=${encodeURIComponent(title)}&title=Special:MediaSearch&go=Go&type=image`,
@@ -41,9 +35,6 @@ export async function wikimedia(title) {
   return results;
 }
 
-/**
- * Ambil quotes anime acak
- */
 export async function quotesAnime() {
   const page = Math.floor(Math.random() * 184);
   const { data } = await axios.get(`https://otakotaku.com/quote/feed/${page}`);
@@ -65,9 +56,6 @@ export async function quotesAnime() {
   return results;
 }
 
-/**
- * Cari wallpaper
- */
 export async function wallpaper(title, page = "1") {
   const { data } = await axios.get(
     `https://www.besthdwallpaper.com/search?CurrentPage=${page}&q=${encodeURIComponent(title)}`,
@@ -94,9 +82,6 @@ export async function wallpaper(title, page = "1") {
   return results;
 }
 
-/**
- * Cari ringtone
- */
 export async function ringtone(title) {
   const { data } = await axios.get(
     `https://meloboom.com/en/search/${encodeURIComponent(title)}`,

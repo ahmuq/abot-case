@@ -1,8 +1,5 @@
 import chalk from "chalk";
 
-/**
- * Logger utility yang konsisten untuk output terminal
- */
 export default class Logger {
   static info(message) {
     console.log(chalk.blue("[INFO]"), message);

@@ -2,12 +2,6 @@ import { makeKeyvAuthState } from "@rodrigogs/baileys-store";
 import fs from "node:fs";
 import initSqlJs from "sql.js";
 
-/**
- * SQL.js-backed StorageAdapter for @rodrigogs/baileys-store
- *
- * Pure-JS SQLite via WASM — tidak perlu C++ build tools.
- * Menyimpan session baileys ke file .db yang persistent.
- */
 class SqlJsStorageAdapter {
   #db;
   #path;
@@ -37,7 +31,6 @@ class SqlJsStorageAdapter {
     this.#saveToDisk();
   }
 
-  /** Tunggu sampai database siap */
   async ready() {
     await this.#ready;
   }
@@ -46,8 +39,6 @@ class SqlJsStorageAdapter {
     const data = this.#db.export();
     fs.writeFileSync(this.#path, Buffer.from(data));
   }
-
-  /* ─── StorageAdapter interface ─── */
 
   async get(key) {
     await this.#ready;
@@ -84,15 +75,6 @@ class SqlJsStorageAdapter {
   }
 }
 
-/**
- * Buat auth state berbasis SQLite (sql.js) + @rodrigogs/baileys-store
- *
- * Session disimpan di file .db (default: session.db).
- * Menggantikan useMultiFileAuthState (folder-based).
- *
- * @param {string} sessionPath - Path file .db untuk session
- * @returns {Promise<{ state: AuthenticationState, saveCreds: () => Promise<void> }>}
- */
 export async function useSQLiteAuthState(sessionPath = "session.db") {
   const adapter = new SqlJsStorageAdapter(sessionPath);
   await adapter.ready();

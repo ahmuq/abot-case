@@ -1,9 +1,6 @@
 import { areJidsSameUser, jidNormalizedUser } from "@whiskeysockets/baileys";
 import { jsonformat } from "../utils/helpers.js";
 
-/**
- * GroupCommand - Command khusus grup
- */
 export default class GroupCommand {
   constructor(bot) {
     this.bot = bot;
@@ -29,8 +26,6 @@ export default class GroupCommand {
     ]);
   }
 
-  /* ───────── Context Helpers ───────── */
-
   async #getGroupContext(msg) {
     if (!msg.isGroup) throw this.bot.config.messages.group;
 
@@ -55,8 +50,6 @@ export default class GroupCommand {
           ? [jidNormalizedUser(text.replace(/[^0-9]/g, "") + "@s.whatsapp.net")]
           : [];
   }
-
-  /* ───────── Handlers ───────── */
 
   async promote(msg, opts) {
     const ctx = await this.#getGroupContext(msg);

@@ -5,10 +5,6 @@ import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-/**
- * Kelas untuk mengelola konversi media ke WebP sticker
- * dan menambahkan EXIF metadata (packname/author)
- */
 export default class Exif {
   #tmpName() {
     return crypto.randomBytes(6).readUIntLE(0, 6).toString(36);
@@ -18,11 +14,6 @@ export default class Exif {
     return path.join(tmpdir(), `${this.#tmpName()}.${ext}`);
   }
 
-  /**
-   * Konversi image buffer ke webp
-   * @param {Buffer} media
-   * @returns {Promise<Buffer>}
-   */
   async imageToWebp(media) {
     const input = this.#tmpPath("jpg");
     const output = this.#tmpPath("webp");
@@ -49,11 +40,6 @@ export default class Exif {
     return buff;
   }
 
-  /**
-   * Konversi video buffer ke webp (animated sticker)
-   * @param {Buffer} media
-   * @returns {Promise<Buffer>}
-   */
   async videoToWebp(media) {
     const input = this.#tmpPath("mp4");
     const output = this.#tmpPath("webp");
@@ -91,10 +77,6 @@ export default class Exif {
     return buff;
   }
 
-  /**
-   * Buat EXIF buffer dari metadata
-   * @param {{ packname?: string, author?: string, categories?: string[] }} metadata
-   */
   #createExifBuffer(metadata) {
     const json = {
       "sticker-pack-id": "bagah-bot",
@@ -113,12 +95,6 @@ export default class Exif {
     return exif;
   }
 
-  /**
-   * Tulis EXIF ke file webp yang sudah ada
-   * @param {Buffer} webpBuffer
-   * @param {{ packname?: string, author?: string }} metadata
-   * @returns {Promise<string>} path ke file hasil
-   */
   async #writeExif(webpBuffer, metadata) {
     const input = this.#tmpPath("webp");
     const output = this.#tmpPath("webp");
@@ -134,25 +110,16 @@ export default class Exif {
     return output;
   }
 
-  /**
-   * Konversi image ke sticker webp dengan EXIF
-   */
   async writeExifImg(media, metadata) {
     const webpBuff = await this.imageToWebp(media);
     return this.#writeExif(webpBuff, metadata);
   }
 
-  /**
-   * Konversi video ke sticker webp dengan EXIF
-   */
   async writeExifVid(media, metadata) {
     const webpBuff = await this.videoToWebp(media);
     return this.#writeExif(webpBuff, metadata);
   }
 
-  /**
-   * Tambah EXIF ke webp yang sudah jadi
-   */
   async writeExifWebp(media, metadata) {
     return this.#writeExif(media, metadata);
   }

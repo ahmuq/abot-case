@@ -1,8 +1,6 @@
 import axios from "axios";
 import moment from "moment-timezone";
 
-/* ───────── Buffer / Fetch ───────── */
-
 export async function getBuffer(url, options = {}) {
   const res = await axios({
     method: "get",
@@ -26,8 +24,6 @@ export async function fetchJson(url, options = {}) {
   });
   return res.data;
 }
-
-/* ───────── Time / Runtime ───────── */
 
 export function runtime(seconds) {
   seconds = Number(seconds);
@@ -62,8 +58,6 @@ export function formatTime() {
   return moment.tz("Asia/Jakarta").format("HH:mm:ss");
 }
 
-/* ───────── String Utilities ───────── */
-
 export function getRandom(ext = "") {
   return `${Math.floor(Math.random() * 100000)}${ext}`;
 }
@@ -92,8 +86,6 @@ export function parseMention(text = "") {
     (v) => v[1] + "@s.whatsapp.net",
   );
 }
-
-/* ───────── Size ───────── */
 
 export function bytesToSize(bytes, decimals = 2) {
   if (bytes === 0) return "0 Bytes";

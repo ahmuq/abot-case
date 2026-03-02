@@ -3,9 +3,6 @@ import fs from "node:fs";
 import { telegraph } from "../lib/uploader.js";
 import { getRandom } from "../utils/helpers.js";
 
-/**
- * MakerCommand - Sticker, toimg, tts, dsb
- */
 export default class MakerCommand {
   constructor(bot) {
     this.bot = bot;
@@ -22,12 +19,8 @@ export default class MakerCommand {
       ["s", { handler: this.sticker.bind(this), category: "maker" }],
       ["stickergif", { handler: this.sticker.bind(this), category: "maker" }],
       ["sgif", { handler: this.sticker.bind(this), category: "maker" }],
-      ["brat", { handler: this.brat.bind(this), category: "maker" }],
-      ["sbrat", { handler: this.brat.bind(this), category: "maker" }],
     ]);
   }
-
-  /* ───────── Handlers ───────── */
 
   async toImage(msg) {
     const quoted = msg.quoted;
@@ -109,21 +102,5 @@ export default class MakerCommand {
     } else {
       throw "Kirim Gambar/Video Dengan Caption !sticker\nDurasi Video 1-9 Detik";
     }
-  }
-
-  async brat(msg, { text }) {
-    if (!text) throw "Kata katanya apa abangku?";
-
-    const { buildApiUrl } = await import("../config/index.js");
-    const axios = (await import("axios")).default;
-
-    const response = await axios.get(
-      buildApiUrl("ryzendesu", "api/sticker/brat", { text }),
-      { responseType: "arraybuffer" },
-    );
-
-    const buffer = Buffer.from(response.data, "binary");
-    const { packname, author } = this.bot.config.sticker;
-    await this.bot.sendSticker(msg.chat, buffer, msg.raw, { packname, author });
   }
 }

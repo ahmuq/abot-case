@@ -1,14 +1,7 @@
 import fs from "node:fs";
 import initSqlJs from "sql.js";
 
-/**
- * Database wrapper menggunakan SQLite via sql.js (pure JS/WASM)
- * Menggantikan semua file .json di folder database
- *
- * Semua data tersimpan di satu file .db — tidak perlu banyak .json lagi.
- */
 export default class Database {
-  /** @param {string} dbPath */
   constructor(dbPath = "database.db") {
     this.dbPath = dbPath;
     this.db = null;
@@ -29,12 +22,9 @@ export default class Database {
     this.save();
   }
 
-  /** Pastikan DB sudah siap sebelum operasi */
   async ready() {
     await this._ready;
   }
-
-  /* ───────── Schema Setup ───────── */
 
   #initTables() {
     this.db.run(`
@@ -65,15 +55,10 @@ export default class Database {
     );
   }
 
-  /* ───────── Persistence ───────── */
-
-  /** Simpan state database ke disk */
   save() {
     const data = this.db.export();
     fs.writeFileSync(this.dbPath, Buffer.from(data));
   }
-
-  /* ───────── Query Helpers ───────── */
 
   #getOne(sql, params = []) {
     const stmt = this.db.prepare(sql);
@@ -97,8 +82,6 @@ export default class Database {
     this.db.run(sql, params);
     this.save();
   }
-
-  /* ───────── Users ───────── */
 
   getUser(jid) {
     return this.#getOne("SELECT * FROM users WHERE jid = ?", [jid]);
@@ -141,8 +124,6 @@ export default class Database {
     return this.#getAll("SELECT * FROM users WHERE premium = 1");
   }
 
-  /* ───────── Groups ───────── */
-
   getGroup(jid) {
     return this.#getOne("SELECT * FROM groups WHERE jid = ?", [jid]);
   }
@@ -169,8 +150,6 @@ export default class Database {
     return row?.antilink === 1;
   }
 
-  /* ───────── Owners ───────── */
-
   getOwners() {
     return this.#getAll("SELECT jid FROM owners").map((r) => r.jid);
   }
@@ -187,8 +166,6 @@ export default class Database {
     return !!this.#getOne("SELECT 1 FROM owners WHERE jid = ?", [jid]);
   }
 
-  /* ───────── Settings (key-value) ───────── */
-
   getSetting(key) {
     const row = this.#getOne("SELECT value FROM settings WHERE key = ?", [key]);
     return row ? JSON.parse(row.value) : null;
@@ -200,8 +177,6 @@ export default class Database {
       JSON.stringify(value),
     ]);
   }
-
-  /* ───────── Generic KV Store ───────── */
 
   getKV(key) {
     const row = this.#getOne("SELECT value FROM kv_store WHERE key = ?", [key]);
@@ -218,8 +193,6 @@ export default class Database {
   deleteKV(key) {
     this.#run("DELETE FROM kv_store WHERE key = ?", [key]);
   }
-
-  /* ───────── Cleanup ───────── */
 
   close() {
     this.save();

@@ -1,9 +1,5 @@
 import axios from "axios";
-import { buildApiUrl } from "../config/index.js";
 
-/**
- * SearchCommand - Pencarian gambar & data dari berbagai sumber
- */
 export default class SearchCommand {
   constructor(bot) {
     this.bot = bot;
@@ -12,10 +8,6 @@ export default class SearchCommand {
   get commands() {
     return new Map([
       ["wikimedia", { handler: this.wikimedia.bind(this), category: "search" }],
-      [
-        "randomwaifu",
-        { handler: this.randomWaifu.bind(this), category: "search" },
-      ],
       ["pinterest", { handler: this.pinterest.bind(this), category: "search" }],
       [
         "tiktokstalk",
@@ -23,8 +15,6 @@ export default class SearchCommand {
       ],
     ]);
   }
-
-  /* ───────── Handlers ───────── */
 
   async wikimedia(msg, { text }) {
     if (!text) throw "Masukkan query pencarian";
@@ -51,35 +41,11 @@ export default class SearchCommand {
     );
   }
 
-  async randomWaifu(msg) {
-    const response = await axios.get(
-      buildApiUrl("ryzendesu", "api/weebs/sfw-waifu"),
-      {
-        headers: { "User-Agent": "Mozilla/5.0" },
-      },
-    );
-
-    if (!response.data?.url) throw "Gagal mengambil gambar waifu";
-
-    await this.bot.sock.sendMessage(
-      msg.chat,
-      {
-        image: { url: response.data.url },
-        caption: "Ini dia waifunya banh 🫡",
-      },
-      { quoted: msg.raw },
-    );
-  }
-
   async pinterest(msg, { text }) {
     if (!text) throw "Kata katanya apa abangku?";
 
-    const response = await axios.get(
-      buildApiUrl("ryzendesu", "api/search/pinterest", { query: text }),
-      { headers: { "User-Agent": "Mozilla/5.0" } },
-    );
-
-    const results = response.data;
+    const { pinterest: scrapePinterest } = await import("../lib/scraper.js");
+    const results = await scrapePinterest(text);
     if (!results?.length) throw "Tidak ada hasil ditemukan";
 
     const limit = Math.min(3, results.length);

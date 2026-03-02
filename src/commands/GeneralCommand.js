@@ -5,9 +5,6 @@ import {
   runtime,
 } from "../utils/helpers.js";
 
-/**
- * GeneralCommand - Command umum (menu, runtime, dsb)
- */
 export default class GeneralCommand {
   constructor(bot) {
     this.bot = bot;
@@ -24,8 +21,6 @@ export default class GeneralCommand {
       ],
     ]);
   }
-
-  /* ───────── Handlers ───────── */
 
   async runtime(msg) {
     await msg.reply(`BOT AKTIF SELAMA : ${runtime(process.uptime())}`);
@@ -54,9 +49,6 @@ export default class GeneralCommand {
 
 ╭──「 *AI MENU* 」
 │ ⿻ !ai
-│ ⿻ !gemini
-│ ⿻ !remini
-│ ⿻ !blackbox
 ╰────────────
 
 ╭──「 *MAKER MENU* 」
@@ -84,20 +76,16 @@ export default class GeneralCommand {
 ╰────────────
 
 ╭──「 *DOWNLOADER MENU* 」
-│ ⿻ !ytmp3 / !ytmp4
 │ ⿻ !ttnwm / !ttmp3
-│ ⿻ !igdl
 │ ⿻ !fbdl
-│ ⿻ !twtdl
 │ ⿻ !couple
+│ ⿻ !quotesanime
 ╰────────────
 
 ╭──「 *SEARCH MENU* 」
 │ ⿻ !wikimedia
 │ ⿻ !pinterest
 │ ⿻ !tiktokstalk
-│ ⿻ !randomwaifu
-│ ⿻ !quotesanime
 ╰────────────
 
 _© Bagah Bot v2.0.0_`;

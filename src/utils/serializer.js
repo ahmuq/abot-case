@@ -5,16 +5,7 @@ import {
   proto,
 } from "@whiskeysockets/baileys";
 
-/**
- * Class Message - membungkus pesan mentah dari baileys
- * jadi object yang lebih mudah digunakan
- */
 export default class Message {
-  /**
-   * @param {import('../BagahBot.js').default} bot
-   * @param {object} raw - Raw message dari baileys
-   * @param {object} store - In-memory store
-   */
   constructor(bot, raw, store) {
     this.bot = bot;
     this.raw = raw;
@@ -22,12 +13,9 @@ export default class Message {
     this.#parse();
   }
 
-  /* ───────── Parsing ───────── */
-
   #parse() {
     const msg = this.raw;
 
-    // Key info
     this.id = msg.key.id;
     this.chat = msg.key.remoteJid;
     this.fromMe = msg.key.fromMe;
@@ -35,7 +23,6 @@ export default class Message {
     this.isBaileys = this.id?.startsWith("BAE5") && this.id?.length === 16;
     this.pushName = msg.pushName || "No Name";
 
-    // Sender
     this.sender = this.#decodeJid(
       (this.fromMe && this.bot.sock.user?.id) ||
         msg.participant ||
@@ -47,10 +34,8 @@ export default class Message {
       this.participant = this.#decodeJid(msg.key.participant) || "";
     }
 
-    // Message content
     if (!msg.message) return;
 
-    // Handle ephemeral wrapper
     const message =
       Object.keys(msg.message)[0] === "ephemeralMessage"
         ? msg.message.ephemeralMessage.message
@@ -64,7 +49,6 @@ export default class Message {
           ]
         : message[this.mtype];
 
-    // Body text
     this.body =
       message.conversation ||
       this.msg?.caption ||
@@ -83,13 +67,10 @@ export default class Message {
       this.msg?.title ||
       "";
 
-    // Mentions
     this.mentionedJid = this.msg?.contextInfo?.mentionedJid || [];
 
-    // Quoted message
     this.#parseQuoted(message);
 
-    // Media download shortcut
     if (this.msg?.url) {
       this.download = () => this.#downloadMedia(this.msg);
     }
@@ -152,8 +133,6 @@ export default class Message {
     };
   }
 
-  /* ───────── Helpers ───────── */
-
   #decodeJid(jid) {
     if (!jid) return jid;
     return jidNormalizedUser(jid);
@@ -172,9 +151,6 @@ export default class Message {
     return buffer;
   }
 
-  /* ───────── Convenience Methods ───────── */
-
-  /** Balas pesan dengan teks */
   async reply(text) {
     return this.bot.sock.sendMessage(
       this.chat,
@@ -183,12 +159,10 @@ export default class Message {
     );
   }
 
-  /** Kirim teks biasa ke chat ini */
   async send(text) {
     return this.bot.sock.sendMessage(this.chat, { text: String(text) });
   }
 
-  /** Kirim image ke chat ini */
   async sendImage(buffer, caption = "") {
     return this.bot.sock.sendMessage(
       this.chat,
@@ -197,7 +171,6 @@ export default class Message {
     );
   }
 
-  /** Kirim video ke chat ini */
   async sendVideo(buffer, caption = "") {
     return this.bot.sock.sendMessage(
       this.chat,
@@ -206,7 +179,6 @@ export default class Message {
     );
   }
 
-  /** Kirim audio ke chat ini */
   async sendAudio(buffer, ptt = false) {
     return this.bot.sock.sendMessage(
       this.chat,
@@ -215,22 +187,18 @@ export default class Message {
     );
   }
 
-  /** Kirim sticker */
   async sendSticker(buffer) {
     return this.bot.sendSticker(this.chat, buffer, this.raw);
   }
 
-  /** Get mime type dari quoted atau message */
   get mime() {
     return (this.quoted?.msg || this.quoted || this.msg)?.mimetype || "";
   }
 
-  /** Check apakah ini media (image/video/sticker/audio) */
   get isMedia() {
     return /image|video|sticker|audio/.test(this.mime);
   }
 
-  /** Shortcut: content string */
   get content() {
     return JSON.stringify(this.raw.message);
   }

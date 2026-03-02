@@ -1,7 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-/* ───────── Load .env (built-in, tanpa dependency) ───────── */
 const envPath = resolve(process.cwd(), ".env");
 if (existsSync(envPath)) {
   const lines = readFileSync(envPath, "utf-8").split("\n");
@@ -12,14 +11,12 @@ if (existsSync(envPath)) {
     if (eqIdx === -1) continue;
     const key = trimmed.slice(0, eqIdx).trim();
     const val = trimmed.slice(eqIdx + 1).trim();
-    // Jangan override env yang sudah di-set (misal dari Docker/PM2)
     if (!(key in process.env)) {
       process.env[key] = val;
     }
   }
 }
 
-/* ───────── Helper ───────── */
 const env = (key, fallback = "") => process.env[key] ?? fallback;
 const envBool = (key, fallback = false) => {
   const v = process.env[key];
@@ -35,24 +32,11 @@ const envList = (key, fallback = []) => {
     .filter(Boolean);
 };
 
-/* ───────── Derived ───────── */
 const ownerNumbers = envList("BOT_OWNER");
 const ownerJid = ownerNumbers.map(
   (n) => n.replace(/[^0-9]/g, "") + "@s.whatsapp.net",
 );
 
-const apiUrls = {
-  betabotz: env("API_BETABOTZ", "https://tools.betabotz.eu.org/"),
-  ryzendesu: env("API_RYZENDESU", "https://api.ryzendesu.vip/"),
-};
-
-/**
- * Konfigurasi utama Bagah Bot
- *
- * Semua value deployment-specific dibaca dari .env
- * → file .env ada di .gitignore, aman git pull tanpa conflict.
- * → commit .env.example sebagai template.
- */
 const config = {
   bot: {
     name: env("BOT_NAME", "Bagah Bot"),
@@ -73,11 +57,9 @@ const config = {
     author: env("STICKER_AUTHOR", "Bagah Bot"),
   },
 
-  apis: apiUrls,
-
-  apiKeys: {
-    [apiUrls.betabotz]: env("APIKEY_BETABOTZ", ""),
-    [apiUrls.ryzendesu]: env("APIKEY_RYZENDESU", ""),
+  api: {
+    baseUrl: env("API_BASE_URL", "https://bagahproject.com"),
+    key: env("API_KEY", ""),
   },
 
   messages: {
@@ -94,27 +76,3 @@ const config = {
 };
 
 export default config;
-
-/**
- * Bangun URL API dari config
- * @param {string} name - Nama API atau base URL
- * @param {string} path - Path endpoint
- * @param {object} query - Query parameters
- * @param {string} apikeyName - Nama query param untuk API key
- */
-export function buildApiUrl(name, path = "/", query = {}, apikeyName) {
-  const base = config.apis[name] || name;
-  const params = { ...query };
-
-  if (apikeyName) {
-    const keyBase = config.apis[name] || name;
-    const key = config.apiKeys[keyBase];
-    if (key) params[apikeyName] = key;
-  }
-
-  const qs = Object.keys(params).length
-    ? "?" + new URLSearchParams(params).toString()
-    : "";
-
-  return base + path + qs;
-}
