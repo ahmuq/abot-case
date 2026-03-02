@@ -1,340 +1,251 @@
-<div align="center">
+﻿<div align="center">
 
-# 🤖 Abot-MD WhatsApp Bot
+# Bagah Bot v2.0.0
 
-_A powerful and feature-rich WhatsApp bot built with Node.js_
+WhatsApp Bot — ESM · OOP · Baileys v7 · SQLite
 
-[![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2Fahlulmukh%2Fabot-case&countColor=%23263759)](https://visitorbadge.io/status?path=https%3A%2F%2Fgithub.com%2Fahlulmukh%2Fabot-case)
-[![Forks](https://img.shields.io/github/forks/ahlulmukh/Abot-MD?label=Forks&color=blue&style=flat-square)](https://github.com/ahlulmukh/Abot-MD/network/members)
-[![Watchers](https://img.shields.io/github/watchers/ahlulmukh/Abot-MD?label=Watchers&color=green&style=flat-square)](https://github.com/ahlulmukh/Abot-MD/watchers)
-[![Stars](https://img.shields.io/github/stars/ahlulmukh/Abot-MD?label=Stars&color=yellow&style=flat-square)](https://github.com/ahlulmukh/Abot-MD/stargazers)
-[![Contributors](https://img.shields.io/github/contributors/ahlulmukh/Abot-MD?label=Contributors&color=blue&style=flat-square)](https://github.com/ahlulmukh/Abot-MD/graphs/contributors)
-[![Issues](https://img.shields.io/github/issues/ahlulmukh/Abot-MD?label=Issues&color=success&style=flat-square)](https://github.com/ahlulmukh/Abot-MD/issues)
-[![Closed Issues](https://img.shields.io/github/issues-closed/ahlulmukh/Abot-MD?label=Closed&color=red&style=flat-square)](https://github.com/ahlulmukh/Abot-MD/issues?q=is%3Aissue+is%3Aclosed)
-[![Pull Requests](https://img.shields.io/github/issues-pr/ahlulmukh/Abot-MD?label=PRs&color=success&style=flat-square)](https://github.com/ahlulmukh/Abot-MD/pulls)
-[![Closed PRs](https://img.shields.io/github/issues-pr-closed/ahlulmukh/Abot-MD?label=Closed&color=red&style=flat-square)](https://github.com/ahlulmukh/Abot-MD/pulls?q=is%3Apr+is%3Aclosed)
+[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?style=flat-square&logo=nodedotjs&logoColor=white)](https://nodejs.org)
+[![Baileys](https://img.shields.io/badge/Baileys-v7%20RC-25D366?style=flat-square&logo=whatsapp&logoColor=white)](https://github.com/WhiskeySockets/Baileys)
+[![License](https://img.shields.io/badge/License-ISC-blue?style=flat-square)](LICENSE)
 
 </div>
 
 ---
 
-## 📖 About This Bot
+## Tentang
 
-**Abot-MD** is a comprehensive WhatsApp bot built with Node.js and Baileys library. It features a modular case-based system that makes it easy to use, maintain, and extend with additional functionality.
+Bagah Bot adalah WhatsApp bot yang ditulis dengan arsitektur **ESM + OOP** menggunakan **Baileys v7** (dengan LID support) dan **SQLite** (via sql.js) untuk session & database. Semua config di-load dari `.env` sehingga aman `git pull` tanpa conflict.
 
-### ✨ Key Features
+## Fitur
 
-- 🏗️ **Modular Architecture**: Built with a case-based system for easy development and maintenance
-- 🔧 **Highly Configurable**: Easy configuration through setting files
-- 🎯 **Multi-Platform Support**: Works on Termux, Ubuntu, Windows, VPS, and RDP
-- 🤖 **AI Integration**: Supports OpenAI ChatGPT integration
-- 📱 **Rich Media Support**: Handles images, videos, stickers, and documents
-- 🛡️ **Security Features**: Anti-link, group management, and user controls
-- 💾 **Database Management**: Built-in database for user data, groups, and configurations
-- 🎨 **Customizable**: Easy to customize and add new commands
+- **Baileys v7 RC** — LID support, native ESM, pairing code (custom 8-digit)
+- **SQLite session** — `session.db` via sql.js (pure JS, tanpa C++ build tools)
+- **SQLite database** — `database.db` menggantikan banyak file `.json`
+- **@rodrigogs/baileys-store v2** — in-memory store + Keyv auth state
+- **Modular commands** — setiap kategori command 1 file class terpisah
+- **Config via `.env`** — tidak ada value sensitif di source code
+- AI, downloader, search, sticker, group management, owner tools
 
----
+## Struktur Project
 
-## 🚀 Installation Guide
-
-### 📱 For Termux/Ubuntu/SSH Users
-
-#### Prerequisites
-
-Make sure you have sufficient storage space and a stable internet connection.
-
-```bash
-# Update system packages
-apt update && apt upgrade -y
-
-# Install required dependencies
-apt install git nodejs ffmpeg imagemagick yarn -y
-
-# Clone the repository
-git clone https://github.com/ahlulmukh/Abot-MD
-cd Abot-MD
-
-# Install project dependencies
-yarn install
-
-# Start the bot
-yarn start
+```
+bagah-bot/
+├── index.js                   # Entry point
+├── .env                       # Config deployment (gitignored)
+├── .env.example               # Template config (di-commit)
+├── package.json
+│
+└── src/
+    ├── BagahBot.js            # Kelas utama (koneksi, events, send)
+    ├── config/
+    │   └── index.js           # Baca .env → config object
+    ├── database/
+    │   ├── Database.js        # SQLite wrapper (users, groups, settings)
+    │   └── AuthState.js       # Session SQLite adapter untuk baileys
+    ├── handlers/
+    │   ├── CommandHandler.js   # Register & route semua command
+    │   └── GroupHandler.js     # Handle join/leave group
+    ├── commands/               # ← TAMBAH COMMAND DI SINI
+    │   ├── GeneralCommand.js   # menu, runtime
+    │   ├── MakerCommand.js     # sticker, toimg, tts, brat
+    │   ├── GroupCommand.js     # promote, demote, kick, hidetag, tagall
+    │   ├── OwnerCommand.js     # setppbot, addpremium, broadcast
+    │   ├── DownloaderCommand.js# tiktok, fb, ig, yt
+    │   ├── SearchCommand.js    # pinterest, wikimedia, waifu
+    │   └── AiCommand.js        # ai, gemini, blackbox, remini
+    ├── lib/
+    │   ├── Exif.js            # WebP sticker + EXIF metadata
+    │   ├── scraper.js         # Web scraping functions
+    │   └── uploader.js        # File upload (telegraph, etc)
+    └── utils/
+        ├── helpers.js         # Utility functions
+        ├── logger.js          # Console logging dengan chalk
+        └── serializer.js      # Message class (wrap raw baileys msg)
 ```
 
-### 💻 For Windows/VPS/RDP Users
+## Instalasi
 
-#### Prerequisites Installation
-
-Download and install the following software:
-
-| Software        | Link                                                    | Notes                                            |
-| --------------- | ------------------------------------------------------- | ------------------------------------------------ |
-| **Git**         | [Download](https://git-scm.com/downloads)               | Version control system                           |
-| **Node.js**     | [Download](https://nodejs.org/en/download)              | JavaScript runtime (LTS version recommended)     |
-| **FFmpeg**      | [Download](https://ffmpeg.org/download.html)            | **Important:** Add to PATH environment variables |
-| **ImageMagick** | [Download](https://imagemagick.org/script/download.php) | Image processing library                         |
-
-#### Installation Steps
+### 1. Clone & install
 
 ```bash
-# Clone the repository
-git clone https://github.com/ahlulmukh/Abot-MD
-cd Abot-MD
-
-# Install dependencies
+git clone https://github.com/ahmuq/abot-case.git bagah-bot
+cd bagah-bot
 npm install
-
-# Update packages (optional)
-npm update
-
-# Start the bot
-npm start
 ```
 
-### 🐳 Docker Installation (Alternative)
+### 2. Setup config
 
 ```bash
-# Clone the repository
-git clone https://github.com/ahlulmukh/Abot-MD
-cd Abot-MD
-
-# Build Docker image
-docker build -t abot-md .
-
-# Run container
-docker run -d --name abot-md-container abot-md
+cp .env.example .env
 ```
 
----
-
-## ⚙️ Configuration
-
-### Basic Configuration
-
-1. **Open the configuration file:**
-
-   ```bash
-   config/setting.js
-   ```
-
-2. **Configure the following settings:**
-
-```javascript
-// Bot Owner Configuration
-global.owner = ["your_phone_number"]; // Your phone number without +
-global.ownerNumber = ["your_number@s.whatsapp.net"];
-global.nomerOwner = "your_phone_number";
-
-// Bot Information
-global.namabotnya = "YourBotName"; // Bot display name
-global.namaownernya = "YourName"; // Your name
-
-// OpenAI Configuration (for ChatGPT features)
-global.keyopenai = "your_openai_api_key_here"; // Get from https://platform.openai.com/
-
-// API Keys (Optional)
-global.APIKeys = {
-  "https://tools.betabotz.eu.org/": "your_api_key",
-  "https://api.ryzendesu.vip/": "your_api_key",
-};
-```
-
-### 🔐 Environment Variables
-
-Create a `.env` file in the root directory:
+Edit `.env` sesuai kebutuhan:
 
 ```env
-# Bot Configuration
-BOT_NAME=Abot-MD
-OWNER_NAME=YourName
-OWNER_NUMBER=your_phone_number
-
-# API Keys
-OPENAI_API_KEY=your_openai_api_key
-BETABOTZ_API_KEY=your_betabotz_api_key
-RYZENDESU_API_KEY=your_ryzendesu_api_key
-
-# Database
-DATABASE_URL=your_database_url (if using external database)
+BOT_NAME=Bagah Bot
+BOT_OWNER=628xxxxxxxxxx
+PAIRING_ENABLED=true
+PAIRING_NUMBER=628xxxxxxxxxx
+PAIRING_CUSTOM_CODE=BAGAHBOT
 ```
 
----
-
-## 🏃 Running the Bot
-
-### Standard Run
+### 3. Jalankan
 
 ```bash
-# Using Node.js
-node main.js
-
-# Or using npm
 npm start
-
-# Or using yarn
-yarn start
 ```
 
-### Development Mode
+Scan pairing code yang muncul di terminal, lalu tunggu sampai `Bot siap menerima pesan!`.
+
+### Update tanpa conflict
 
 ```bash
-# With auto-restart on file changes
-npm install -g nodemon
-nodemon main.js
-```
-
-### Production Mode
-
-```bash
-# Using PM2 for production
-npm install -g pm2
-pm2 start main.js --name "abot-md"
-pm2 save
-pm2 startup
+git pull origin master
+npm install
+# .env kamu tetap aman, tidak ke-overwrite
 ```
 
 ---
 
-## 📚 Project Structure
+## Cara Menambah Command Baru
 
+Ada **2 cara**: tambah ke module yang sudah ada, atau buat module baru.
+
+### Cara 1 — Tambah ke module yang sudah ada
+
+Misalnya mau tambah command `!ping` di `GeneralCommand.js`:
+
+**1.** Buka `src/commands/GeneralCommand.js`
+
+**2.** Daftarkan di `get commands()`:
+
+```js
+get commands() {
+  return new Map([
+    // ... command yang sudah ada
+    ["ping", { handler: this.ping.bind(this), category: "general" }],
+  ]);
+}
 ```
-abot-case/
-├── 📁 config/           # Configuration files
-│   ├── config.json      # Bot configuration
-│   └── setting.js       # Main settings
-├── 📁 function/         # Core functionality
-│   ├── case.js          # Command handlers
-│   ├── 📁 database/     # Database files
-│   ├── 📁 lib/          # Utility libraries
-│   └── 📁 image/        # Bot images and media
-├── 📁 session/          # WhatsApp session data
-├── 📁 sticker/          # Sticker configuration
-├── main.js              # Main bot file
-├── package.json         # Dependencies and scripts
-└── README.md           # This file
+
+**3.** Buat method handler-nya:
+
+```js
+async ping(msg) {
+  const start = Date.now();
+  await msg.reply("Pong!");
+  const latency = Date.now() - start;
+  await msg.reply(`Latency: ${latency}ms`);
+}
+```
+
+Selesai. Bot langsung mengenali `!ping`.
+
+### Cara 2 — Buat module command baru
+
+Misalnya mau buat kategori `fun`:
+
+**1.** Buat file `src/commands/FunCommand.js`:
+
+```js
+/**
+ * FunCommand - Command hiburan
+ */
+export default class FunCommand {
+  constructor(bot) {
+    this.bot = bot;
+  }
+
+  get commands() {
+    return new Map([
+      ["flip", { handler: this.coinFlip.bind(this), category: "fun" }],
+      ["dice", { handler: this.rollDice.bind(this), category: "fun" }],
+    ]);
+  }
+
+  async coinFlip(msg) {
+    const result = Math.random() < 0.5 ? "🪙 Heads!" : "🪙 Tails!";
+    await msg.reply(result);
+  }
+
+  async rollDice(msg) {
+    const result = Math.floor(Math.random() * 6) + 1;
+    await msg.reply(`🎲 Kamu dapet: ${result}`);
+  }
+}
+```
+
+**2.** Register di `src/handlers/CommandHandler.js`:
+
+```js
+// Tambah import di atas
+import FunCommand from "../commands/FunCommand.js";
+
+// Tambah di array modules dalam #registerAll()
+const modules = [
+  new GeneralCommand(this.bot),
+  new MakerCommand(this.bot),
+  // ... module lain
+  new FunCommand(this.bot), // ← tambahkan di sini
+];
+```
+
+Selesai. Semua command dari `FunCommand` langsung aktif.
+
+### Pola handler
+
+Setiap handler menerima 2 parameter:
+
+```js
+async namaCommand(msg, { args, text, command }) {
+  // msg        → object Message (lihat src/utils/serializer.js)
+  // args       → array kata setelah command, e.g. ["hello", "world"]
+  // text       → string gabungan args, e.g. "hello world"
+  // command    → string nama command yang dipanggil
+
+  // ─── Akses bot ───
+  this.bot.sock          // baileys socket
+  this.bot.db            // database (SQLite)
+  this.bot.config        // config dari .env
+  this.bot.isCreator(jid)// cek owner
+
+  // ─── Reply ───
+  await msg.reply("teks");
+  await msg.sendImage(buffer, "caption");
+  await msg.sendVideo(buffer, "caption");
+  await msg.sendAudio(buffer, true);  // true = voice note
+  await msg.sendSticker(buffer);
+
+  // ─── Media dari quoted ───
+  if (msg.quoted) {
+    const media = await msg.quoted.download();
+    // media = Buffer
+  }
+
+  // ─── Throw untuk error message ───
+  if (!text) throw "Masukkan teks!";
+  if (!msg.isGroup) throw this.bot.config.messages.group;
+}
 ```
 
 ---
 
-## 🔧 Commands and Features
+## Tech Stack
 
-### General Commands
+| Komponen | Library                                 |
+| -------- | --------------------------------------- |
+| WhatsApp | `@whiskeysockets/baileys` v7 RC         |
+| Store    | `@rodrigogs/baileys-store` v2           |
+| Database | `sql.js` (pure JS SQLite)               |
+| Sticker  | `jimp`, `node-webpmux`, `fluent-ffmpeg` |
+| HTTP     | `axios`                                 |
+| Scraping | `cheerio`                               |
 
-- `!help` - Display help menu
-- `!info` - Bot information
-- `!ping` - Check bot response time
+## Requirements
 
-### Media Commands
+- Node.js 20+
+- FFmpeg (untuk sticker video)
 
-- `!sticker` - Convert images/videos to stickers
-- `!toimg` - Convert sticker to image
-- `!download` - Download media from URLs
+## License
 
-### Group Management
-
-- `!antilink` - Toggle anti-link protection
-- `!welcome` - Set welcome message
-- `!kick` - Remove user from group (admin only)
-
-### AI Features
-
-- `!ai [question]` - Chat with AI
-- `!img [prompt]` - Generate images with AI
-
-_Use `!menu` command in WhatsApp to see all available commands_
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! Here's how you can help:
-
-1. **Fork the repository**
-2. **Create a feature branch**
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
-3. **Commit your changes**
-   ```bash
-   git commit -m 'Add some amazing feature'
-   ```
-4. **Push to the branch**
-   ```bash
-   git push origin feature/amazing-feature
-   ```
-5. **Open a Pull Request**
-
-### Development Guidelines
-
-- Follow the existing code style
-- Add comments for complex logic
-- Test your changes thoroughly
-- Update documentation if needed
-
----
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-#### Bot not responding
-
-- Check internet connection
-- Verify WhatsApp session is active
-- Check console for error messages
-
-#### Installation errors
-
-- Ensure Node.js version is 16 or higher
-- Clear npm cache: `npm cache clean --force`
-- Delete `node_modules` and reinstall: `rm -rf node_modules && npm install`
-
-#### Session expired
-
-- Delete `session` folder
-- Restart bot and rescan QR code
-
-### Getting Help
-
-- 📧 Email: [ahluldev20@gmail.com](mailto:ahluldev20@gmail.com)
-- 💬 Telegram: [@ahlulmukh](https://t.me/ahlulmukh)
-- 🐛 Issues: [GitHub Issues](https://github.com/ahlulmukh/Abot-MD/issues)
-
----
-
-## 📄 License
-
-This project is licensed under the **ISC License** - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🙏 Acknowledgments
-
-- Thanks to [@WhiskeySockets](https://github.com/WhiskeySockets) for the Baileys library
-- Thanks to all contributors who help improve this project
-- Special thanks to the open-source community
-
----
-
-## 📱 Connect With Developer
-
-<div align="center">
-
-[![Instagram](https://img.shields.io/badge/-Instagram-e4405f?style=for-the-badge&logo=Instagram&logoColor=white)](https://www.instagram.com/ahlulmukh)
-[![Facebook](https://img.shields.io/badge/-Facebook-1877f2?style=for-the-badge&logo=Facebook&logoColor=white)](https://facebook.com/ahlulmukh)
-[![Telegram](https://img.shields.io/badge/-Telegram-0088cc?style=for-the-badge&logo=Telegram&logoColor=white)](https://t.me/ahlulmukh)
-[![WhatsApp](https://img.shields.io/badge/-WhatsApp-25d366?style=for-the-badge&logo=WhatsApp&logoColor=white)](https://s.id/1Gqvt)
-[![Email](https://img.shields.io/badge/-Email-ea4335?style=for-the-badge&logo=Gmail&logoColor=white)](mailto:ahluldev20@gmail.com)
-[![GitHub](https://img.shields.io/badge/-GitHub-181717?style=for-the-badge&logo=GitHub&logoColor=white)](https://github.com/ahlulmukh)
-
-</div>
-
----
-
-<div align="center">
-
-**Made with ❤️ by [Ahlul Mukh](https://github.com/ahlulmukh)**
-
-_If this project helped you, please consider giving it a ⭐_
-
-</div>
+ISC © ahmuq
