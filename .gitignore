@@ -3,3 +3,4 @@ session
 package-lock.json
 database.db
 session.db
+.env

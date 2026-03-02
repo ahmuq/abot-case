@@ -1,9 +1,11 @@
 import { makeInMemoryStore } from "@rodrigogs/baileys-store";
 import makeWASocket, {
   DisconnectReason,
+  areJidsSameUser,
   delay,
   fetchLatestBaileysVersion,
-  jidDecode,
+  isPnUser,
+  jidNormalizedUser,
 } from "@whiskeysockets/baileys";
 import { fileTypeFromBuffer } from "file-type";
 import pino from "pino";
@@ -31,7 +33,7 @@ export default class BagahBot {
     this.db = new Database("database.db");
     this.config = config;
     this.exif = new Exif();
-    this.isPublic = true;
+    this.isPublic = config.bot.public;
 
     this.commandHandler = null;
     this.groupHandler = null;
@@ -130,6 +132,11 @@ export default class BagahBot {
         }
       }
     });
+
+    // LID mapping update (v7: track LID ↔ PN mappings)
+    this.sock.ev.on("lid-mapping.update", (mapping) => {
+      Logger.info(`LID mapping updated: ${JSON.stringify(mapping)}`);
+    });
   }
 
   /* ═══════════════════════════════════════════
@@ -182,8 +189,9 @@ export default class BagahBot {
         // Antilink check
         await this.#checkAntilink(msg);
 
-        // Auto block +212
-        if (msg.sender?.startsWith("212")) {
+        // Auto block +212 (hanya untuk PN JID, skip LID)
+        const senderPN = this.#toPnJid(msg.sender);
+        if (senderPN?.startsWith("212")) {
           await this.sock.updateBlockStatus(msg.sender, "block");
           continue;
         }
@@ -225,16 +233,16 @@ export default class BagahBot {
     const group = this.db.getGroup(msg.chat);
     if (!group?.antilink) return;
 
-    // Cek apakah sender admin
+    // Cek apakah sender admin (LID-safe comparison)
     const metadata = await this.sock.groupMetadata(msg.chat);
     const admins = metadata.participants
       .filter((v) => v.admin)
       .map((v) => v.id);
-    if (admins.includes(msg.sender)) return;
+    if (admins.some((a) => areJidsSameUser(a, msg.sender))) return;
 
     // Cek bot admin
     const botJid = this.decodeJid(this.sock.user.id);
-    if (!admins.includes(botJid)) return;
+    if (!admins.some((a) => areJidsSameUser(a, botJid))) return;
 
     await this.sock.sendMessage(
       msg.chat,
@@ -255,6 +263,7 @@ export default class BagahBot {
     if (!usePairing || this.sock.authState.creds.registered) return;
 
     const phone = String(this.config.pairing.number);
+    const customCode = this.config.pairing.customCode || "";
 
     if (!/^\d{10,15}$/.test(phone)) {
       Logger.error("Invalid number, start with country code (Example: 62xxx)");
@@ -264,7 +273,25 @@ export default class BagahBot {
     await delay(3000);
 
     try {
-      let code = await this.sock.requestPairingCode(phone);
+      // Validate custom code (must be exactly 8 alphanumeric characters)
+      let validatedCode = null;
+      if (customCode) {
+        const cleanCode = customCode
+          .toString()
+          .replace(/[-\s]/g, "")
+          .toUpperCase();
+
+        if (/^[A-Z0-9]{8}$/.test(cleanCode)) {
+          validatedCode = cleanCode;
+          Logger.info(`Using custom pairing code: ${cleanCode}`);
+        } else {
+          Logger.warn(
+            `Invalid custom code (must be 8 alphanumeric chars, got: ${cleanCode}), using random code`,
+          );
+        }
+      }
+
+      let code = await this.sock.requestPairingCode(phone, validatedCode);
       code = code?.match(/.{1,4}/g)?.join("-") || code;
       Logger.success(`Your Pairing Code : ${code}`);
     } catch (err) {
@@ -276,29 +303,48 @@ export default class BagahBot {
    *  UTILITY METHODS
    * ═══════════════════════════════════════════ */
 
-  /** Decode JID (menghapus device suffix) */
+  /** Decode JID (menghapus device suffix, compatible dengan LID & PN) */
   decodeJid(jid) {
     if (!jid) return jid;
-    if (/:\d+@/gi.test(jid)) {
-      const decode = jidDecode(jid) || {};
-      return (
-        (decode.user && decode.server && `${decode.user}@${decode.server}`) ||
-        jid
-      );
-    }
-    return jid;
+    return jidNormalizedUser(jid);
   }
 
-  /** Cek apakah sender adalah creator/owner bot */
+  /**
+   * Coba resolve JID ke PN (phone number) format.
+   * Jika sudah PN, return user part. Jika LID, coba resolve via lidMapping.
+   * Return null jika tidak bisa resolve.
+   */
+  #toPnJid(jid) {
+    if (!jid) return null;
+    const normalized = jidNormalizedUser(jid);
+    if (isPnUser(normalized)) return normalized.split("@")[0];
+    // Coba resolve LID → PN via lidMapping
+    try {
+      const pn =
+        this.sock?.signalRepository?.lidMapping?.getPNForLID(normalized);
+      return pn ? pn.split("@")[0] : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Cek apakah sender adalah creator/owner bot (LID-safe) */
   isCreator(sender) {
     const botNumber = this.decodeJid(this.sock.user.id);
-    const ownerList = [botNumber, ...this.config.bot.ownerJid].map(
-      (v) => v.replace(/[^0-9]/g, "") + "@s.whatsapp.net",
+    const ownerList = [botNumber, ...this.config.bot.ownerJid].map((v) =>
+      jidNormalizedUser(
+        v.includes("@") ? v : v.replace(/[^0-9]/g, "") + "@s.whatsapp.net",
+      ),
     );
-    return ownerList.includes(sender);
+
+    // Direct match (PN vs PN)
+    if (ownerList.includes(sender)) return true;
+
+    // LID-aware match: resolve via lidMapping if available
+    return ownerList.some((owner) => areJidsSameUser(owner, sender));
   }
 
-  /** Ambil nama dari JID */
+  /** Ambil nama dari JID (handle LID & PN) */
   async getName(jid) {
     const id = this.decodeJid(jid);
 
@@ -308,8 +354,8 @@ export default class BagahBot {
       return v.name || v.subject || id;
     }
 
-    if (id === "0@s.whatsapp.net") return "WhatsApp";
-    if (id === this.decodeJid(this.sock.user.id))
+    if (isPnUser(id) && id.startsWith("0")) return "WhatsApp";
+    if (areJidsSameUser(id, this.sock.user.id))
       return this.sock.user?.name || "Bot";
 
     const contact = this.store?.contacts?.[id] || {};

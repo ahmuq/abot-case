@@ -1,3 +1,4 @@
+import { areJidsSameUser, jidNormalizedUser } from "@whiskeysockets/baileys";
 import { jsonformat } from "../utils/helpers.js";
 
 /**
@@ -39,8 +40,8 @@ export default class GroupCommand {
     const admins = participants
       .filter((v) => v.admin !== null)
       .map((v) => v.id);
-    const isBotAdmin = admins.includes(botNumber);
-    const isAdmin = admins.includes(msg.sender);
+    const isBotAdmin = admins.some((a) => areJidsSameUser(a, botNumber));
+    const isAdmin = admins.some((a) => areJidsSameUser(a, msg.sender));
 
     return { metadata, participants, admins, isBotAdmin, isAdmin, botNumber };
   }
@@ -51,7 +52,7 @@ export default class GroupCommand {
       : msg.quoted
         ? [msg.quoted.sender]
         : text
-          ? [text.replace(/[^0-9]/g, "") + "@s.whatsapp.net"]
+          ? [jidNormalizedUser(text.replace(/[^0-9]/g, "") + "@s.whatsapp.net")]
           : [];
   }
 

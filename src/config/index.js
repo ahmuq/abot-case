@@ -1,33 +1,83 @@
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+/* ───────── Load .env (built-in, tanpa dependency) ───────── */
+const envPath = resolve(process.cwd(), ".env");
+if (existsSync(envPath)) {
+  const lines = readFileSync(envPath, "utf-8").split("\n");
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const eqIdx = trimmed.indexOf("=");
+    if (eqIdx === -1) continue;
+    const key = trimmed.slice(0, eqIdx).trim();
+    const val = trimmed.slice(eqIdx + 1).trim();
+    // Jangan override env yang sudah di-set (misal dari Docker/PM2)
+    if (!(key in process.env)) {
+      process.env[key] = val;
+    }
+  }
+}
+
+/* ───────── Helper ───────── */
+const env = (key, fallback = "") => process.env[key] ?? fallback;
+const envBool = (key, fallback = false) => {
+  const v = process.env[key];
+  if (v === undefined) return fallback;
+  return v === "true" || v === "1";
+};
+const envList = (key, fallback = []) => {
+  const v = process.env[key];
+  if (!v) return fallback;
+  return v
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+};
+
+/* ───────── Derived ───────── */
+const ownerNumbers = envList("BOT_OWNER");
+const ownerJid = ownerNumbers.map(
+  (n) => n.replace(/[^0-9]/g, "") + "@s.whatsapp.net",
+);
+
+const apiUrls = {
+  betabotz: env("API_BETABOTZ", "https://tools.betabotz.eu.org/"),
+  ryzendesu: env("API_RYZENDESU", "https://api.ryzendesu.vip/"),
+};
+
 /**
  * Konfigurasi utama Bagah Bot
- * Sesuaikan value di bawah sesuai kebutuhan
+ *
+ * Semua value deployment-specific dibaca dari .env
+ * → file .env ada di .gitignore, aman git pull tanpa conflict.
+ * → commit .env.example sebagai template.
  */
 const config = {
   bot: {
-    name: "Bagah Bot",
-    prefix: ["", "!", ".", "#", "-", "•"],
-    owner: ["yournumber"],
-    ownerJid: ["yournumber@s.whatsapp.net"],
+    name: env("BOT_NAME", "Bagah Bot"),
+    prefix: envList("BOT_PREFIX", ["", "!", ".", "#", "-", "•"]),
+    owner: ownerNumbers,
+    ownerJid,
+    public: envBool("BOT_PUBLIC", true),
   },
 
   pairing: {
-    enabled: true,
-    number: 6283865204595,
+    enabled: envBool("PAIRING_ENABLED", true),
+    number: env("PAIRING_NUMBER", ""),
+    customCode: env("PAIRING_CUSTOM_CODE", ""),
   },
 
   sticker: {
-    packname: "© Created By",
-    author: "Bagah Bot",
+    packname: env("STICKER_PACKNAME", "© Created By"),
+    author: env("STICKER_AUTHOR", "Bagah Bot"),
   },
 
-  apis: {
-    betabotz: "https://tools.betabotz.eu.org/",
-    ryzendesu: "https://api.ryzendesu.vip/",
-  },
+  apis: apiUrls,
 
   apiKeys: {
-    "https://tools.betabotz.eu.org/": "",
-    "https://api.ryzendesu.vip/": "",
+    [apiUrls.betabotz]: env("APIKEY_BETABOTZ", ""),
+    [apiUrls.ryzendesu]: env("APIKEY_RYZENDESU", ""),
   },
 
   messages: {
