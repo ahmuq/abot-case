@@ -87,7 +87,7 @@ export default class BagahBot {
     // Handle pairing code
     await this.#handlePairing(usePairing);
 
-    Logger.info("Bot siap menerima pesan...");
+    Logger.info("Menunggu koneksi...");
   }
 
   /* ═══════════════════════════════════════════
@@ -158,6 +158,7 @@ export default class BagahBot {
       const name =
         this.sock.user?.name || this.sock.user?.verifiedName || "WhatsApp Bot";
       Logger.connection(`Terkoneksi sebagai ${name}`);
+      Logger.success("Bot siap menerima pesan!");
     }
   }
 
