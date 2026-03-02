@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/ahmuq/abot-case/compare/v1.2.0...v1.2.1) (2026-03-02)
+
+
+### Bug Fixes
+
+* update project title in README to match versioning convention ([cbb229f](https://github.com/ahmuq/abot-case/commit/cbb229fda3c181f909d9487d2704b435bafe4869))
+
 ## [1.2.0](https://github.com/ahmuq/abot-case/compare/v1.1.0...v1.2.0) (2026-03-02)
 
 
